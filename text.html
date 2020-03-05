@@ -1,0 +1,68 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>글쓰기</title>
+<style type="text/css">
+table {
+	width: 600px;
+}
+
+table, td, th {
+	border: 1px soild;
+	border-collapse: collapse;
+	padding: 5px;
+}
+
+input[type='text'] {
+	width: 100%
+}
+
+textarea {
+	width: 95%;
+	 resize:  none;
+}
+th{
+	background-color: hotpink;
+}
+</style>
+</head>
+<body>
+	<center>
+		<h3>글쓰기</h3>
+		<hr>
+		<form action="boardWrite" method="post" enctype="multipart/form-data">
+			<table>
+				<tr>
+					<th>작성자</th>
+					<td><input type="text" name="bid" required></td>
+				</tr>
+				<tr>
+					<th>제목</th>
+					<td><input type="text" name="btitle" required></td>
+				</tr>
+				<tr>
+					<th>내용</th>
+					<td><textarea name="bcontents" rows="20">
+				</textarea></td>
+				</tr>
+				<tr>
+					<th>파일첨부</th>
+					<td><input type="file" name="files" id="files"
+						onchange="fileChk(this)" multiple> <input type="hidden"
+						id="filecheck" value="0" name="fileCheck"></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center"><input type="submit"
+						value="글작성"> <input type="reset" value="취소"> <input
+						type="button" value="돌아가기" onclick="location.href='./list'">
+					</td>
+				</tr>
+			</table>
+		</form>
+	</center>
+</body>
+</html>
+[출처] Spring 6일차 (보드에 글작성)|작성자 whdgus5841
