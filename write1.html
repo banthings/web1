@@ -1,0 +1,475 @@
+<HTML>
+ <HEAD>
+  <TITLE>
+   게시판 서비스
+  </TITLE>
+</HEAD>
+<BODY>
+<CENTER>
+<?
+  $host_name = "localhost"; 
+  $user_name = "root";
+  $user_password = "apmsetup";
+  $db_name ="board";
+
+$connect = mysql_connect($host_name,$user_name,$user_password);  // sql문으로 바꾸면 mysql -u root -p board //
+mysql_select_db($db_name, $connect);   // sql로 바꾸면 use board //
+
+  $que = "CREATE TABLE board (
+   uid int(11) DEFAULT '0' NOT NULL auto_increment,
+   name varchar(20) NOT NULL,
+   homepage varchar(50),
+   email varchar(40),
+   content text NOT NULL,
+   host varchar(20),
+   signdate varchar(30),
+   PRIMARY KEY (uid)
+)";
+
+  mysql_query( $que, $connect );
+
+$admin_email = 'akeida@naver.com' ;
+$admin_pass = '12345' ;
+$home_url = 'http://localhost/Source/12Chapter/board.php' ;
+$img_url ='./image' ;
+
+$pages = 10;  //한페이지에 10개씩 넣는다
+$mail = 1; 
+$db_table = 'board' ;
+
+if(!$mode ) {
+    if(!$start) {
+  $start= 0 ;
+ }
+
+    $result = mysql_query ("SELECT * FROM $db_table ORDER BY uid DESC" );  //내림차순 (최근 게시물이 가장 앞으로) //
+    $total = mysql_num_rows($result); 
+
+ if (!$total) {
+  echo "<center><b>글 남기기</b></center>";
+ }
+
+ else {
+
+ if ( $page == '') {
+   $page=1;
+  }
+
+  $pre_page = $page - 1;  //이전페이지로 이동 //
+  $nex_tpage = $page + 1;  //다음페이지 이동 //
+  $cpage = intval($page);  //현재 페이지 //
+  $total_page = intval($total/$pages);   //
+ 
+  if ($total_page*$pages != $total)  // total_page 의 값이 total 값과 //
+   $total_page = $total_page + 1;  //같지 않을경우 토탈 페이지 변수에 1을 더한다 //
+
+  if ($cpage == 1) {
+            $cline = 0 ;
+  }
+  
+  else {
+   $cline = ($cpage*$pages) - $pages ;
+  }
+
+        $limit=$cline+$pages;
+
+        if ($limit >= $total)
+            $limit=$total;
+
+echo ("
+<table border=1 width=600>
+ <H2>게시판 서비스</H2>
+   <tr>
+    <td align=left width=30%>
+     <a href='$PHP_SELF?mode=new'>
+       글 쓰기
+     </a> ");
+
+        if ($page > 1) {
+            echo ("
+                <a href='$PHP_SELF?page=$pre_page'>
+                  뒤로
+                </a>
+            ");
+        }
+
+        if ($page < $totalpage) {
+            echo ("
+                <a href='$PHP_SELF?page=$next_page'>
+                  다음
+                </a>
+            ");
+        }
+
+echo ("
+        </td>
+  <td width=60%>
+      <b>
+   $total 개의 글이 등록되었습니다.<br>
+       
+        전체 페이지 수 :
+          $total_page
+       
+        현재 페이지 수 :
+            $page
+  </b>
+    </td>
+       
+   <td width=10% align=right>
+      <a href='$home_url'>
+        홈으로
+      </a>
+    </td>
+    </tr>
+    </table>  ");
+
+        while ( ($cline < $limit) && ($i < $limit) ) { 
+            for( $i = $cline ; $i < $limit ; $i++) {   
+                $uid = mysql_result($result,$cline,"uid");
+                $name = mysql_result($result,$cline,"name");
+                $email = mysql_result($result,$cline,"email");
+                $homepage = mysql_result($result,$cline,"homepage");
+                $content = mysql_result($result,$cline,"content");
+                $signdate = mysql_result($result,$cline,"signdate");
+                $host = mysql_result($result,$cline,"host");
+
+echo ("
+<table border=1 width=600>
+    <tr>
+      <td width=10% align=center>
+        <b>No.</b>
+        $uid
+      </td>
+      
+      <td width=10% align=center><b>NAME : </td>
+     <td width=15% align=center><a href='$homepage' target='_blank'><b> $name</td>
+   
+        <td width=30%>
+          E-Mail
+            <a href='mailto:$email'>
+              $email
+            </a>
+        </td>
+
+  <td width=10% align=center>
+          <b>방문일</b>
+        </td>
+       
+        <td width=25%>
+          $signdate
+        </td>
+                 
+        <td width=5% align=center>
+          <a href='$PHP_SELF?mode=delete&uid=$uid'>
+            삭제
+          </a>
+        </td>
+      </tr>
+     
+      <tr>
+        <td colspan=2 width=20% align=center>
+          <b>홈페이지
+        </td>
+       
+        <td colspan=3 width=50%>
+          <a href='$homepage' target='_blank'>
+            $homepage
+          </a>&nbsp;&nbsp;&nbsp;from
+
+            ($host)
+        </td>
+
+     <tr>
+        <td colspan=2 width=20% align=center>
+          <b>MEMO :
+        </td>
+       
+        <td colspan=5>
+          $content
+        </td>
+
+
+<tr>
+                  <tr>
+        <td colspan=2 width=20% align=center>
+          <b>리플달기 : <td colspan=3 width=50%>
+             <textarea name=content rows=2 cols=40>
+            </textarea><td colspan=4>리플내용은 40자까지
+             <input type=submit value='리플달기'>
+          </td>
+
+       </tr>
+ <td colspan=2 width=20% align=center>
+          <b>리플내용 :
+      
+               </td>
+       
+
+     </tr>
+   </table><br> ");
+
+                $cline = $cline +1;
+             }
+           }
+ }
+
+echo("
+<table border=0 width=600>
+    <tr>
+ <td width=20% align=left>
+   <a href='$PHP_SELF?mode=new'>
+      글 쓰기
+    </a> ");
+
+    if ($page > 1) {
+        echo ("
+            <a href='$PHP_SELF?page=$pre_page'>
+              이전
+            </a>
+        ");
+    }
+
+    if ($page < $total_page) {
+        echo ("
+            <a href='$PHP_SELF?page=$nex_tpage'>
+              다음
+            </a>
+        ");
+    }
+
+echo ("
+        </td>
+    
+        <td align=right width=10%>
+         <a href='$home_url'>
+           홈으로
+         </a>
+        </td>
+      </tr>
+ </table>
+</BODY>
+</HTML>
+    ");
+}
+
+if($mode=='write') {
+    if(!$name || !$content) {
+
+echo("
+  <img src=./image/error.gif alt=에러가 발생했어요!!><br>
+
+<table width=300 border=0>
+    <tr>
+     <td align=center>
+          <b>에러네여??</b>
+      </td>
+    </tr>
+   
+    <tr>
+     <td align=center>
+      <b>꼭~! 이름, 점수, 소감을 입력해주세여..
+ </td></tr>
+</table>
+
+  <p><b><a href='javascript:history.back()'> 뒤로 </A></b>
+</BODY>
+</HTML>  ");
+
+     exit;
+    }
+
+    $name =  addslashes($name) ;
+    $homepage =  addslashes($homepage) ;
+    $email =  addslashes($email) ;
+    $content =  addslashes($content) ;
+    $host = getenv("REMOTE_ADDR");
+    $signdate = date("Y년m월d일H시i분");
+
+    if ($homepage =='http://') {
+        $homepage = '';
+    }
+
+    if ( $usetag == '') {
+     $content = htmlspecialchars($content);
+     $content = chop($content);
+     $content = nl2br(addslashes($content));
+    }
+    else {
+     $content = eregi_replace("<\\?","&lt;?",$content);
+     $content = eregi_replace("\\?>","?&gt;",$content);
+     $content = eregi_replace("<script(.*)>","&lt;script\\1 &gt;",$content);
+     $content = eregi_replace("</script>","&lt;/script &gt;",$content);
+     $content = chop($content);
+     $content = nl2br(addslashes($content));
+   }
+
+        if(($mail)&&($email)) {
+          $subject = " $name 님 글 남겨주셔서 감사해요...";
+          $text = "안녕하세요? $name 님. 담에 또 와주세요..";
+
+       }
+
+      $result = mysql_query( " INSERT INTO $db_table VALUES('', '$name', '$homepage', '$email', '$content','$host', '$signdate')" ,$connect);
+        if($result) {
+          echo(" 
+           <meta http-equiv='Refresh' content='1; URL=$PHP_SELF'>
+           <br><br>
+           <center>
+              $name 님께서 글을 남기셨어욤!!<br><br>
+          ");
+       }
+   
+       else {
+         echo("
+            <img src=./image/error.gif alt=Error><br>
+
+           <table width=300 border=0>
+             <tr>
+               <td align=center>
+     <b>DB 에러 발생</b>
+                </td>
+              </tr>
+             
+              <tr>
+               <td align=center>
+                 <b>데이터베이스 에러가 발생했습니다.<br>
+                </td>
+              </tr>
+           </table>
+            <p>
+              <b><a href='javascript:history.back()'> 뒤로 </A></b>
+       </BODY>
+     </HTML> ");
+     exit;  
+    }
+
+}
+
+if($mode == 'delete') {
+ if(!$del_action) {
+echo ("
+<table width=350 align=center border=0>
+    <tr>
+     <td align=center>
+       <b>관리자 전용!!</b><br>
+   관리자만 글 삭제를 할 수 있어요!!
+
+       <form method=post action=$PHP_SELF?mode=delete&uid=$uid>
+         <input type=hidden name=del_action value=ok>
+    </tr>
+   
+    <tr>
+     <td>
+        <B>비밀번호</B></font> : <input type=password name=pass size=15>
+      </td>
+
+     <td align=center>
+        <input type=submit value='DELETE'>
+      </td>
+    </tr>
+  </form>
+</table>
+</BODY>
+</HTML> ");
+}
+
+  if($del_action == "ok") {
+       if($pass == $admin_pass) {
+         $result = mysql_query(" DELETE FROM $db_table WHERE uid=$uid ",$connect);
+       
+         echo("  <meta http-equiv='Refresh' content='1; URL=$PHP_SELF'> 
+           <br><br>
+           <center>
+            <b>$uid 번 글을 삭제했어요!!<br>
+              </center> ");
+       }
+
+  else {
+   echo("
+     <meta http-equiv='Refresh' content='1; URL=$PHP_SELF'>
+     <img src=./image/error.gif alt=Error!!><br>
+
+     <table width=300 border=0>
+       <tr>
+         <td align=center>
+   <b>글 삭제를 할 수 없어요!!</b>
+          </td>
+        </tr>
+       
+        <tr>
+         <td align=center>
+            <b>관리자만 글 삭제를 할 수 있어요!!<br>
+          </td>
+        </tr>
+     </table>
+ </BODY>
+ </HTML>   ");
+  exit;
+    }
+   }
+}
+
+if($mode=='new') {
+echo ("
+ <form method=POST action='$PHP_SELF?mode=write'>
+   <table border=0 align=center width=550>
+      <tr>
+       <td colspan=2 align=center>
+   <H2>게시판에 글 남기기</H2>
+        </td>
+     </tr>
+
+     <tr>
+        <td align=right>
+          NAME
+        </td>
+
+        <td>
+          <input type=text name=name size=15>
+        </td>
+     </tr>
+
+     <tr>
+        <td align=right>
+          E-Mail
+        </td>
+       
+        <td>
+          <p><input type=text name=email size=30>
+        </td>
+      </tr>
+     
+      <tr>
+        <td align=right>
+          HOMEPAGE
+        </td>
+   
+        <td>
+          <input type=text name=homepage size=40 value=http://>
+        </td>
+     </tr>
+   
+        <tr>
+          <td align=right>
+            WRITE
+          </td>
+         
+          <td>
+            <textarea name=content rows=10 cols=60>
+            </textarea>
+          </td>
+       </tr>
+
+       <tr>
+         <td colspan=2 align=center>
+             <input type=submit value='전송하기'>
+          <input type=reset value='취소하기'>
+          </td>
+        </tr>
+     </table></form>
+   </BODY>
+</HTML> ");
+
+ }
+  mysql_close($connect);
+?>
